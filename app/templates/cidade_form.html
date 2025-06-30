@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Nova Cidade{% endblock %}
+
+{% block content %}
+<h2>Cadastrar Cidade</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Salvar</button>
+    <a href="{% url 'cidade-list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

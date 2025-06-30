@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Novo Produto{% endblock %}
+
+{% block content %}
+<h2>Cadastrar Produto</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Salvar</button>
+    <a href="{% url 'lista_produtos' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

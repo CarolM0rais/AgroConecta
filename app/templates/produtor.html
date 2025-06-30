@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Produtores{% endblock %}
+
+{% block content %}
+    <h1>Lista de Produtores</h1>
+    <ul>
+        {% for produtor in produtores %}
+            <li>{{ produtor.nome }}</li>
+        {% empty %}
+            <li>Nenhum produtor cadastrado.</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'index' %}">Voltar para a Home</a>
+{% endblock %}
