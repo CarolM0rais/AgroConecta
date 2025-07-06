@@ -4,12 +4,39 @@
 
 {% block content %}
     <h1>Lista de Clientes</h1>
-    <ul>
-        {% for cliente in clientes %}
-            <li>{{ cliente.nome }}</li>
-        {% empty %}
-            <li>Nenhum cliente cadastrado.</li>
-        {% endfor %}
-    </ul>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Cidade</th>
+                <th>UF</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in clientes %}
+                <tr>
+                    <td>{{ cliente.nome }}</td>
+                    <td>
+                        {% if cliente.cidade %}
+                            {{ cliente.cidade.nome }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if cliente.cidade %}
+                            {{ cliente.cidade.uf }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">Nenhum cliente cadastrado.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     <a href="{% url 'index' %}">Voltar para a Home</a>
 {% endblock %}

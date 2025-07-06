@@ -1,9 +1,8 @@
 from django.contrib import admin
-from .models import Cidade, CategoriaProduto, TipoPessoa, Pessoa, Produto, FormaPagamento, Pedido, ItemPedido
+from .models import Cidade, CategoriaProduto, Pessoa, Produto, FormaPagamento, Pedido, ItemPedido
 
 admin.site.register(Cidade)
 admin.site.register(CategoriaProduto)
-admin.site.register(TipoPessoa)
 admin.site.register(Pessoa)
 admin.site.register(Produto)
 admin.site.register(FormaPagamento)

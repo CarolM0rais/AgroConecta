@@ -3,13 +3,41 @@
 {% block title %}Produtores{% endblock %}
 
 {% block content %}
-    <h1>Lista de Produtores</h1>
-    <ul>
-        {% for produtor in produtores %}
-            <li>{{ produtor.nome }}</li>
-        {% empty %}
-            <li>Nenhum produtor cadastrado.</li>
-        {% endfor %}
-    </ul>
-    <a href="{% url 'index' %}">Voltar para a Home</a>
+<h2>Lista de produtores</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Cidade</th>
+            <th>UF</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for produtor in produtores %}
+        <tr>
+            <td>{{ produtor.nome }}</td>
+            <td>
+                {% if produtor.cidade %}
+                    {{ produtor.cidade.nome }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>
+                {% if produtor.cidade %}
+                    {{ produtor.cidade.uf }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="3">Nenhum produtor cadastrado.</td>
+        </tr>
+    {% endfor %}
+</tbody>
+</table>
+
+<a href="{% url 'index' %}">Voltar para a Home</a>
 {% endblock %}

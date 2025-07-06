@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.contrib import messages
-from .models import Cidade, Produto, Pedido, CategoriaProduto, Pessoa, FormaPagamento
+from .models import *
 
 # Página inicial
 class IndexView(View):
@@ -134,13 +134,13 @@ class PedidoCreateView(View):
         return redirect('pedido-list')
 
 # Listagem de Produtores
-class ProdutorListView(View):
-    def get(self, request):
-        produtores = Pessoa.objects.filter(tipo__nome='produtor')
-        return render(request, 'produtor.html', {'produtores': produtores})
+
+def lista_produtores(request):
+    produtores = Pessoa.objects.filter(tipo=TipoPessoa.PRODUTOR)
+    return render(request, 'produtor.html', {'produtores': produtores})
+
 
 # Listagem de Clientes
-class ClienteListView(View):
-    def get(self, request):
-        clientes = Pessoa.objects.filter(tipo__nome='cliente')
-        return render(request, 'cliente.html', {'clientes': clientes})
+def lista_clientes(request):
+    clientes = Pessoa.objects.filter(tipo=TipoPessoa.CLIENTE)
+    return render(request, 'cliente.html', {'clientes': clientes})
