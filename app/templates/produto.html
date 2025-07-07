@@ -6,41 +6,23 @@
 <h2>Produtos</h2>
 <a href="{% url 'produto-create' %}" class="btn btn-success mb-3">Novo Produto</a>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Foto</th>
-            <th>Nome</th>
-            <th>Descrição</th>
-            <th>Preço</th>
-            <th>Unidade</th>
-            <th>Qtd. disponível</th>
-            <th>Produtor</th>
-            <th>Categoria</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for produto in produtos %}
-            <tr>
-                <td>
-                    {% if produto.foto %}
-    <img src="{{ produto.foto.url }}" alt="{{ produto.nome }}" style="max-width: 100px; max-height: 100px; object-fit: contain;">
-{% else %}
-    Sem imagem
-{% endif %}
+<div class="list-group">
+    {% for produto in produtos %}
+        <a href="{% url 'produto-detalhe' produto.id %}" class="list-group-item list-group-item-action d-flex align-items-center">
+            {% if produto.foto %}
+                <img src="{{ produto.foto.url }}" alt="{{ produto.nome }}" class="img-thumbnail me-3" style="width: 80px; height: 80px; object-fit: contain;">
+            {% else %}
+                <div class="img-thumbnail me-3" style="width: 80px; height: 80px; background-color: #eee; display: flex; align-items: center; justify-content: center; color: #999;">
+                    Sem imagem
+                </div>
+            {% endif %}
+            <div>
+                <h5 class="mb-0">{{ produto.nome }}</h5>
+            </div>
+        </a>
+    {% empty %}
+        <p>Nenhum produto cadastrado.</p>
+    {% endfor %}
+</div>
 
-                </td>
-                <td>{{ produto.nome }}</td>
-                <td>{{ produto.descricao }}</td>
-                <td>R$ {{ produto.preco }}</td>
-                <td>{{ produto.unidade_medida }}</td>
-                <td>{{ produto.quantidade_disponivel }}</td>
-                <td>{{ produto.produtor.nome }}</td>
-                <td>{{ produto.categoria.nome }}</td>
-            </tr>
-        {% empty %}
-            <tr><td colspan="8">Nenhum produto cadastrado.</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
 {% endblock %}

@@ -3,6 +3,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from app.views import (
+
     IndexView,
     CidadeListView, CidadeCreateView,
     ProdutoListView, ProdutoCreateView,
@@ -10,11 +11,15 @@ from app.views import (
     lista_clientes, lista_produtores,
     RegistroClienteView, RegistroProdutorView,
     CustomLoginView, CustomLogoutView,
+    ProdutoDetailView,  # <-- importe aqui a nova view de detalhe
+
+
 )
 
 urlpatterns = [
     path('admin/', admin.site.urls),  # Adiciona o admin
     path('', IndexView.as_view(), name='index'),
+    path('produtos/<int:pk>/', ProdutoDetailView.as_view(), name='produto-detalhe'),
     path('login/', CustomLoginView.as_view(), name='login'),
     path('logout/', CustomLogoutView.as_view(), name='logout'),
     path('registro-cliente/', RegistroClienteView.as_view(), name='registro_cliente'),

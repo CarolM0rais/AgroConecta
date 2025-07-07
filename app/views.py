@@ -117,3 +117,9 @@ class RegistroProdutorView(View):
             messages.success(request, 'Registro realizado com sucesso! Bem-vindo(a)!')
             return redirect('index')
         return render(request, 'registro_produtor.html', {'form': form})
+
+
+class ProdutoDetailView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        produto = get_object_or_404(Produto, pk=pk)
+        return render(request, 'produto_detalhe.html', {'produto': produto})
