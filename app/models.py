@@ -1,5 +1,8 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 class Cidade(models.Model):
     nome = models.CharField(max_length=100)
@@ -20,12 +23,26 @@ class TipoPessoa(models.TextChoices):
     ADMIN = 'admin', 'Administrador'
 
 class Pessoa(models.Model):
+    user = models.OneToOneField(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='pessoa',
+        null=True,         # Permite nulo temporariamente
+        blank=True         # Permite formulário em branco temporariamente
+    )
     nome = models.CharField(max_length=150)
     tipo = models.CharField(max_length=20, choices=TipoPessoa.choices)
     cidade = models.ForeignKey(Cidade, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.nome
+
+@receiver(post_save, sender=User)
+def criar_pessoa(sender, instance, created, **kwargs):
+    if created and not hasattr(instance, 'pessoa'):
+        # Não cria automaticamente para evitar criação automática sem dados completos
+        pass
+
 
 class Produto(models.Model):
     nome = models.CharField(max_length=100)
@@ -35,17 +52,20 @@ class Produto(models.Model):
     quantidade_disponivel = models.DecimalField(max_digits=10, decimal_places=2)
     produtor = models.ForeignKey(Pessoa, on_delete=models.CASCADE)
     categoria = models.ForeignKey(CategoriaProduto, on_delete=models.PROTECT)
-
+    
+    foto = models.ImageField(upload_to='produtos_fotos/', null=True, blank=True)  # <<< Novo campo
+    
     def clean(self):
         if self.produtor.tipo != TipoPessoa.PRODUTOR:
             raise ValidationError("O campo 'produtor' deve estar associado a uma Pessoa do tipo 'produtor'.")
-
+    
     def save(self, *args, **kwargs):
-        self.full_clean()  # chama o clean()
+        self.full_clean()
         super().save(*args, **kwargs)
-
+    
     def __str__(self):
         return self.nome
+
 
 class FormaPagamento(models.Model):
     nome = models.CharField(max_length=50)
@@ -71,7 +91,7 @@ class Pedido(models.Model):
             raise ValidationError("O campo 'cliente' deve estar associado a uma Pessoa do tipo 'cliente'.")
 
     def save(self, *args, **kwargs):
-        self.full_clean()  # chama o clean()
+        self.full_clean()
         super().save(*args, **kwargs)
 
     def __str__(self):

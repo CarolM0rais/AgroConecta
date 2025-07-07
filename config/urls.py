@@ -1,17 +1,32 @@
-from django.contrib import admin
+from django.contrib import admin  # Importar o admin
 from django.urls import path
-from app.views import *
-
+from django.conf import settings
+from django.conf.urls.static import static
+from app.views import (
+    IndexView,
+    CidadeListView, CidadeCreateView,
+    ProdutoListView, ProdutoCreateView,
+    PedidoListView, PedidoCreateView,
+    lista_clientes, lista_produtores,
+    RegistroClienteView, RegistroProdutorView,
+    CustomLoginView, CustomLogoutView,
+)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls),  # Adiciona o admin
     path('', IndexView.as_view(), name='index'),
+    path('login/', CustomLoginView.as_view(), name='login'),
+    path('logout/', CustomLogoutView.as_view(), name='logout'),
+    path('registro-cliente/', RegistroClienteView.as_view(), name='registro_cliente'),
+    path('registro-produtor/', RegistroProdutorView.as_view(), name='registro_produtor'),
     path('cidades/', CidadeListView.as_view(), name='cidade-list'),
-    path('cidades/novo/', CidadeCreateView.as_view(), name='cidade-create'),
+    path('cidades/nova/', CidadeCreateView.as_view(), name='cidade-create'),
     path('produtos/', ProdutoListView.as_view(), name='lista_produtos'),
     path('produtos/novo/', ProdutoCreateView.as_view(), name='produto-create'),
-    path('clientes/', lista_clientes, name='lista_clientes'),  # precisa implementar view
     path('pedidos/', PedidoListView.as_view(), name='lista_pedidos'),
     path('pedidos/novo/', PedidoCreateView.as_view(), name='pedido-create'),
+    path('clientes/', lista_clientes, name='lista_clientes'),
     path('produtores/', lista_produtores, name='lista_produtores'),
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

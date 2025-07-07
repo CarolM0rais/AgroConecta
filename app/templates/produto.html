@@ -9,6 +9,7 @@
 <table class="table table-striped">
     <thead>
         <tr>
+            <th>Foto</th>
             <th>Nome</th>
             <th>Descrição</th>
             <th>Preço</th>
@@ -21,6 +22,14 @@
     <tbody>
         {% for produto in produtos %}
             <tr>
+                <td>
+                    {% if produto.foto %}
+    <img src="{{ produto.foto.url }}" alt="{{ produto.nome }}" style="max-width: 100px; max-height: 100px; object-fit: contain;">
+{% else %}
+    Sem imagem
+{% endif %}
+
+                </td>
                 <td>{{ produto.nome }}</td>
                 <td>{{ produto.descricao }}</td>
                 <td>R$ {{ produto.preco }}</td>
@@ -30,7 +39,7 @@
                 <td>{{ produto.categoria.nome }}</td>
             </tr>
         {% empty %}
-            <tr><td colspan="7">Nenhum produto cadastrado.</td></tr>
+            <tr><td colspan="8">Nenhum produto cadastrado.</td></tr>
         {% endfor %}
     </tbody>
 </table>
