@@ -1,8 +1,82 @@
 {% extends 'base.html' %}
-
-{% block title %}Home - Vendas Rurais{% endblock %}
+{% load static %}
+{% block title %}Início - AgroConecta{% endblock %}
 
 {% block content %}
-<h1>Bem-vinda à Plataforma de Vendas Diretas para Produtores Rurais</h1>
-<p>Use o menu para navegar entre Cidades, Produtos e Pedidos.</p>
+<style>
+  /* Fundo com a imagem */
+  body {
+  background: url("{% static 'app/images/agricultura.jpg.webp' %}") no-repeat center center fixed;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+
+  /* Fundo semitransparente para o container, melhor leitura do texto */
+  .overlay-container {
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  }
+</style>
+
+<div class="container py-5 overlay-container">
+  <div class="text-center mb-5">
+    <h1 class="display-4 fw-bold text-success">Bem-vindo(a) ao AgroConecta!</h1>
+    <p class="lead text-muted">A plataforma que conecta produtores e clientes com agilidade e segurança.</p>
+  </div>
+
+  {% if user.is_authenticated %}
+    <div class="row justify-content-center g-4">
+      <div class="col-md-4">
+        <div class="card shadow-sm border-success">
+          <div class="card-body text-center">
+            <h5 class="card-title text-success">Produtos</h5>
+            <p class="card-text">Confira os produtos disponíveis na plataforma.</p>
+            <a href="{% url 'lista_produtos' %}" class="btn btn-success">Ver Produtos</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card shadow-sm border-success">
+          <div class="card-body text-center">
+            <h5 class="card-title text-success">Pedidos</h5>
+            <p class="card-text">Acompanhe seus pedidos realizados.</p>
+            <a href="{% url 'lista_pedidos' %}" class="btn btn-success">Ver Pedidos</a>
+          </div>
+        </div>
+      </div>
+
+      {% if user.pessoa.tipo == 'produtor' %}
+      <div class="col-md-4">
+        <div class="card shadow-sm border-success">
+          <div class="card-body text-center">
+            <h5 class="card-title text-success">Novo Produto</h5>
+            <p class="card-text">Adicione novos produtos para venda.</p>
+            <a href="{% url 'produto-create' %}" class="btn btn-success">Cadastrar Produto</a>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if user.is_superuser %}
+      <div class="col-md-4">
+        <div class="card shadow-sm border-success">
+          <div class="card-body text-center">
+            <h5 class="card-title text-success">Administração</h5>
+            <p class="card-text">Gerencie usuários, cidades e configurações.</p>
+            <a href="{% url 'admin:index' %}" class="btn btn-success">Painel Admin</a>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="alert alert-info text-center" role="alert">
+      Olá! Para acessar a plataforma, faça seu <a href="{% url 'login' %}" class="alert-link">login</a> ou <a href="{% url 'registro_cliente' %}" class="alert-link">registre-se</a> como cliente ou produtor.
+    </div>
+  {% endif %}
+</div>
 {% endblock %}

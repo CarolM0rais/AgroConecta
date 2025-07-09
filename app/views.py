@@ -3,7 +3,7 @@ from django.views import View
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import reverse_lazy
 from .models import *
@@ -36,16 +36,32 @@ class CidadeCreateView(LoginRequiredMixin, View):
 # Produtos
 class ProdutoListView(LoginRequiredMixin, View):
     def get(self, request):
-        produtos = Produto.objects.all()
+        user = request.user
+        # Clientes e produtores só veem produtos
+        if user.is_superuser:
+            produtos = Produto.objects.all()
+        elif hasattr(user, 'pessoa') and user.pessoa.tipo in ['cliente', 'produtor']:
+            produtos = Produto.objects.all()
+        else:
+            messages.error(request, 'Você não tem permissão para acessar os produtos.')
+            return redirect('index')
         return render(request, 'produto.html', {'produtos': produtos})
 
-class ProdutoCreateView(LoginRequiredMixin, View):
+class ProdutoCreateView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        user = self.request.user
+        return user.is_authenticated and hasattr(user, 'pessoa') and user.pessoa.tipo == 'produtor'
+
+    def handle_no_permission(self):
+        messages.error(self.request, "Você não tem permissão para acessar essa página.")
+        return redirect('lista_produtos')
+
     def get(self, request):
         form = ProdutoForm()
         return render(request, 'produto_form.html', {'form': form})
 
     def post(self, request):
-        form = ProdutoForm(request.POST, request.FILES)  # Importante receber arquivos!
+        form = ProdutoForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, 'Produto criado com sucesso!')
@@ -55,7 +71,14 @@ class ProdutoCreateView(LoginRequiredMixin, View):
 # Pedidos
 class PedidoListView(LoginRequiredMixin, View):
     def get(self, request):
-        pedidos = Pedido.objects.select_related('cliente', 'forma_pagamento').all()
+        user = request.user
+        if user.is_superuser:
+            pedidos = Pedido.objects.select_related('cliente', 'forma_pagamento').all()
+        elif hasattr(user, 'pessoa') and user.pessoa.tipo in ['cliente', 'produtor']:
+            pedidos = Pedido.objects.filter(cliente=user.pessoa).select_related('forma_pagamento')
+        else:
+            messages.error(request, 'Você não tem permissão para acessar os pedidos.')
+            return redirect('index')
         return render(request, 'pedido.html', {'pedidos': pedidos})
 
 class PedidoCreateView(LoginRequiredMixin, View):
@@ -74,18 +97,47 @@ class PedidoCreateView(LoginRequiredMixin, View):
 # Listagem de Produtores
 @login_required
 def lista_produtores(request):
+    if not request.user.is_superuser:
+        messages.error(request, "Você não tem permissão para acessar esta página.")
+        return redirect('index')
     produtores = Pessoa.objects.filter(tipo=TipoPessoa.PRODUTOR)
     return render(request, 'produtor.html', {'produtores': produtores})
 
 # Listagem de Clientes
 @login_required
 def lista_clientes(request):
+    if not request.user.is_superuser:
+        messages.error(request, "Você não tem permissão para acessar esta página.")
+        return redirect('index')
     clientes = Pessoa.objects.filter(tipo=TipoPessoa.CLIENTE)
     return render(request, 'cliente.html', {'clientes': clientes})
 
 # Autenticação
+
 class CustomLoginView(LoginView):
-    template_name = 'login.html'
+    template_name = 'login.html'  # Usa seu template já existente
+
+    def get_success_url(self):
+        user = self.request.user
+
+        if hasattr(user, 'pessoa'):
+            tipo = user.pessoa.tipo
+
+            if tipo == 'cliente':
+                messages.success(self.request, f'Bem-vindo(a), {user.pessoa.nome} (Cliente)!')
+                return reverse_lazy('index')
+
+            elif tipo == 'produtor':
+                messages.success(self.request, f'Bem-vindo(a), {user.pessoa.nome} (Produtor)!')
+                return reverse_lazy('lista_produtos')
+
+            elif tipo == 'admin':
+                messages.success(self.request, f'Bem-vindo(a), {user.pessoa.nome} (Administrador)!')
+                return reverse_lazy('admin:index')
+
+        # Caso o usuário não esteja vinculado a uma Pessoa, redireciona para home com alerta
+        messages.warning(self.request, 'Seu perfil ainda não está vinculado a um tipo de usuário.')
+        return reverse_lazy('index')
 
 class CustomLogoutView(LogoutView):
     next_page = reverse_lazy('index')
@@ -117,7 +169,6 @@ class RegistroProdutorView(View):
             messages.success(request, 'Registro realizado com sucesso! Bem-vindo(a)!')
             return redirect('index')
         return render(request, 'registro_produtor.html', {'form': form})
-
 
 class ProdutoDetailView(LoginRequiredMixin, View):
     def get(self, request, pk):

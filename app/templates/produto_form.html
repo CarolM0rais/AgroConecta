@@ -1,6 +1,10 @@
+{% if user.is_authenticated and user.pessoa.tipo == 'produtor' %}
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit" class="btn btn-primary">Salvar</button>
     <a href="{% url 'lista_produtos' %}" class="btn btn-secondary">Cancelar</a>
 </form>
+{% else %}
+<p class="text-danger">Você não tem permissão para acessar este formulário.</p>
+{% endif %}
