@@ -7,7 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import reverse_lazy
 from .models import *
-from .forms import CidadeForm, ProdutoForm, PedidoForm, RegistroClienteForm, RegistroProdutorForm
+from .forms import CidadeForm, ProdutoForm, PedidoForm, RegistroClienteForm, RegistroProdutorForm, TipoPessoa
 
 # Página inicial
 class IndexView(View):
@@ -37,10 +37,9 @@ class CidadeCreateView(LoginRequiredMixin, View):
 class ProdutoListView(LoginRequiredMixin, View):
     def get(self, request):
         user = request.user
-        # Clientes e produtores só veem produtos
         if user.is_superuser:
             produtos = Produto.objects.all()
-        elif hasattr(user, 'pessoa') and user.pessoa.tipo in ['cliente', 'produtor']:
+        elif hasattr(user, 'pessoa') and user.pessoa.tipo in [TipoPessoa.CLIENTE, TipoPessoa.PRODUTOR]:
             produtos = Produto.objects.all()
         else:
             messages.error(request, 'Você não tem permissão para acessar os produtos.')
@@ -50,7 +49,7 @@ class ProdutoListView(LoginRequiredMixin, View):
 class ProdutoCreateView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
         user = self.request.user
-        return user.is_authenticated and hasattr(user, 'pessoa') and user.pessoa.tipo == 'produtor'
+        return user.is_authenticated and hasattr(user, 'pessoa') and user.pessoa.tipo == TipoPessoa.PRODUTOR
 
     def handle_no_permission(self):
         messages.error(self.request, "Você não tem permissão para acessar essa página.")
@@ -63,7 +62,9 @@ class ProdutoCreateView(LoginRequiredMixin, UserPassesTestMixin, View):
     def post(self, request):
         form = ProdutoForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            produto = form.save(commit=False)
+            produto.produtor = request.user.pessoa  # Atribui o produtor logado aqui
+            produto.save()
             messages.success(request, 'Produto criado com sucesso!')
             return redirect('lista_produtos')
         return render(request, 'produto_form.html', {'form': form})
@@ -74,7 +75,7 @@ class PedidoListView(LoginRequiredMixin, View):
         user = request.user
         if user.is_superuser:
             pedidos = Pedido.objects.select_related('cliente', 'forma_pagamento').all()
-        elif hasattr(user, 'pessoa') and user.pessoa.tipo in ['cliente', 'produtor']:
+        elif hasattr(user, 'pessoa') and user.pessoa.tipo in [TipoPessoa.CLIENTE, TipoPessoa.PRODUTOR]:
             pedidos = Pedido.objects.filter(cliente=user.pessoa).select_related('forma_pagamento')
         else:
             messages.error(request, 'Você não tem permissão para acessar os pedidos.')
@@ -113,29 +114,22 @@ def lista_clientes(request):
     return render(request, 'cliente.html', {'clientes': clientes})
 
 # Autenticação
-
 class CustomLoginView(LoginView):
-    template_name = 'login.html'  # Usa seu template já existente
+    template_name = 'login.html'
 
     def get_success_url(self):
         user = self.request.user
-
         if hasattr(user, 'pessoa'):
             tipo = user.pessoa.tipo
-
-            if tipo == 'cliente':
+            if tipo == TipoPessoa.CLIENTE:
                 messages.success(self.request, f'Bem-vindo(a), {user.pessoa.nome} (Cliente)!')
                 return reverse_lazy('index')
-
-            elif tipo == 'produtor':
+            elif tipo == TipoPessoa.PRODUTOR:
                 messages.success(self.request, f'Bem-vindo(a), {user.pessoa.nome} (Produtor)!')
                 return reverse_lazy('lista_produtos')
-
-            elif tipo == 'admin':
+            elif tipo == TipoPessoa.ADMIN:
                 messages.success(self.request, f'Bem-vindo(a), {user.pessoa.nome} (Administrador)!')
                 return reverse_lazy('admin:index')
-
-        # Caso o usuário não esteja vinculado a uma Pessoa, redireciona para home com alerta
         messages.warning(self.request, 'Seu perfil ainda não está vinculado a um tipo de usuário.')
         return reverse_lazy('index')
 

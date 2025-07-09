@@ -27,8 +27,8 @@ class Pessoa(models.Model):
         User, 
         on_delete=models.CASCADE, 
         related_name='pessoa',
-        null=True,         # Permite nulo temporariamente
-        blank=True         # Permite formulário em branco temporariamente
+        null=True,
+        blank=True
     )
     nome = models.CharField(max_length=150)
     tipo = models.CharField(max_length=20, choices=TipoPessoa.choices)
@@ -43,29 +43,33 @@ def criar_pessoa(sender, instance, created, **kwargs):
         # Não cria automaticamente para evitar criação automática sem dados completos
         pass
 
-
 class Produto(models.Model):
     nome = models.CharField(max_length=100)
     descricao = models.TextField(blank=True)
     preco = models.DecimalField(max_digits=10, decimal_places=2)
     unidade_medida = models.CharField(max_length=20)
     quantidade_disponivel = models.DecimalField(max_digits=10, decimal_places=2)
+    
     produtor = models.ForeignKey(Pessoa, on_delete=models.CASCADE)
     categoria = models.ForeignKey(CategoriaProduto, on_delete=models.PROTECT)
-    
-    foto = models.ImageField(upload_to='produtos_fotos/', null=True, blank=True)  # <<< Novo campo
-    
+    foto = models.ImageField(upload_to='produtos_fotos/', null=True, blank=True)
+
     def clean(self):
-        if self.produtor.tipo != TipoPessoa.PRODUTOR:
-            raise ValidationError("O campo 'produtor' deve estar associado a uma Pessoa do tipo 'produtor'.")
-    
+        # Valida só se produtor estiver atribuído
+        if self.produtor_id is not None:
+            if self.produtor.tipo != TipoPessoa.PRODUTOR:
+                raise ValidationError("O campo 'produtor' deve estar associado a uma Pessoa do tipo 'produtor'.")
+
     def save(self, *args, **kwargs):
-        self.full_clean()
+        self.full_clean()  # Valida antes de salvar
         super().save(*args, **kwargs)
-    
+
     def __str__(self):
         return self.nome
 
+    class Meta:
+        verbose_name = "Produto"
+        verbose_name_plural = "Produtos"
 
 class FormaPagamento(models.Model):
     nome = models.CharField(max_length=50)

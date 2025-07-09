@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Cidade, Produto, Pedido, Pessoa, TipoPessoa
 
@@ -17,9 +17,8 @@ class ProdutoForm(forms.ModelForm):
             'preco',
             'unidade_medida',
             'quantidade_disponivel',
-            'produtor',
             'categoria',
-            'foto',  # Inclui o campo foto para upload
+            'foto',
         ]
 
 class PedidoForm(forms.ModelForm):
@@ -38,7 +37,7 @@ class RegistroClienteForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.email = self.cleaned_data['email']  # Certifica que o email será salvo
+        user.email = self.cleaned_data['email']
         if commit:
             user.save()
             Pessoa.objects.create(
@@ -60,7 +59,7 @@ class RegistroProdutorForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.email = self.cleaned_data['email']  # Certifica que o email será salvo
+        user.email = self.cleaned_data['email']
         if commit:
             user.save()
             Pessoa.objects.create(
