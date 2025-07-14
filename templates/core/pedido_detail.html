@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalhes do Pedido #{{ pedido.pk }} - AgroConecta{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Início</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'meus_pedidos' %}">Meus Pedidos</a></li>
+            <li class="breadcrumb-item active">Pedido #{{ pedido.pk }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="bi bi-receipt me-2"></i>Detalhes do Pedido #{{ pedido.pk }}</h4>
+                    <span class="badge bg-light text-dark fs-6 status-{{ pedido.status }}">{{ pedido.get_status_display }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Comprador:</strong> {{ pedido.comprador.get_full_name|default:pedido.comprador.username }}</p>
+                            <p class="mb-1"><strong>Email:</strong> {{ pedido.comprador.email }}</p>
+                            <p class="mb-1"><strong>Telefone:</strong> {{ pedido.comprador.telefone|default:'Não informado' }}</p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <p class="mb-1"><strong>Data do Pedido:</strong> {{ pedido.data_pedido|date:"d/m/Y H:i" }}</p>
+                            <p class="mb-1"><strong>Última Atualização:</strong> {{ pedido.data_atualizacao|date:"d/m/Y H:i" }}</p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h5><i class="bi bi-basket me-2"></i>Itens do Pedido</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th class="text-center">Qtd</th>
+                                    <th class="text-end">Preço Unitário</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in pedido.itens.all %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'produto_detail' item.produto.pk %}" class="text-success fw-bold">{{ item.produto.nome }}</a>
+                                            <br><small class="text-muted">Produtor: {{ item.produto.produtor.username }}</small>
+                                        </td>
+                                        <td class="text-center">{{ item.quantidade }}</td>
+                                        <td class="text-end">R$ {{ item.preco_unitario|floatformat:2 }}</td>
+                                        <td class="text-end">R$ {{ item.get_subtotal|floatformat:2 }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3" class="text-end">Total do Pedido:</th>
+                                    <th class="text-end text-success fs-4">R$ {{ pedido.get_total|floatformat:2 }}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    {% if pedido.observacoes %}
+                        <hr>
+                        <h5><i class="bi bi-chat-left-text me-2"></i>Observações</h5>
+                        <p class="text-muted">{{ pedido.observacoes }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-info mb-4">
+                <div class="card-body">
+                    <h5 class="card-title text-info"><i class="bi bi-info-circle me-2"></i>Próximos Passos</h5>
+                    <p class="card-text small text-muted">
+                        O produtor responsável pelos itens do seu pedido foi notificado.
+                        Ele entrará em contato para combinar os detalhes da entrega e do pagamento.
+                    </p>
+                    <p class="card-text small text-muted mb-0">
+                        Em caso de dúvidas, você pode entrar em contato diretamente com o produtor:
+                        <br><strong>{{ pedido.itens.first.produto.produtor.username }}</strong>
+                        {% if pedido.itens.first.produto.produtor.telefone %}
+                            <br><i class="bi bi-telephone me-1"></i>{{ pedido.itens.first.produto.produtor.telefone }}
+                        {% endif %}
+                        {% if pedido.itens.first.produto.produtor.email %}
+                            <br><i class="bi bi-envelope me-1"></i>{{ pedido.itens.first.produto.produtor.email }}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            {% if user.user_type == 'produtor' %}
+                <div class="card border-warning">
+                    <div class="card-body">
+                        <h5 class="card-title text-warning"><i class="bi bi-tools me-2"></i>Ações do Produtor</h5>
+                        <p class="card-text small text-muted">
+                            Como produtor, você pode atualizar o status deste pedido.
+                        </p>
+                        <form method="post" action="{% url 'admin:core_pedido_change' pedido.pk %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="id_status" class="form-label">Atualizar Status:</label>
+                                <select name="status" id="id_status" class="form-select">
+                                    {% for choice_value, choice_label in pedido.STATUS_CHOICES %}
+                                        <option value="{{ choice_value }}" {% if pedido.status == choice_value %}selected{% endif %}>{{ choice_label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-warning btn-sm">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Atualizar Status
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

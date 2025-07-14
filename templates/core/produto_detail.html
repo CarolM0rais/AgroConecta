@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ produto.nome }} - AgroConecta{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Início</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'produto_list' %}">Produtos</a></li>
+            <li class="breadcrumb-item active">{{ produto.nome }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Imagem do Produto -->
+        <div class="col-md-6">
+            {% if produto.imagem %}
+                <img src="{{ produto.imagem.url }}" class="produto-imagem" alt="{{ produto.nome }}">
+            {% else %}
+                <div class="produto-imagem bg-light d-flex align-items-center justify-content-center">
+                    <i class="bi bi-image text-muted" style="font-size: 5rem;"></i>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Informações do Produto -->
+        <div class="col-md-6">
+            <div class="card border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h1 class="card-title">{{ produto.nome }}</h1>
+                        <span class="badge badge-categoria fs-6">{{ produto.categoria.nome }}</span>
+                    </div>
+
+                    <div class="mb-4">
+                        <span class="produto-preco display-6">R$ {{ produto.preco }}</span>
+                        <span class="text-muted fs-5">/ {{ produto.unidade }}</span>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>Descrição</h5>
+                        <p class="text-muted">{{ produto.descricao }}</p>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <h6>Produtor</h6>
+                            <p class="mb-0">
+                                <i class="bi bi-person me-2"></i>{{ produto.produtor.get_full_name|default:produto.produtor.username }}
+                            </p>
+                        </div>
+                        <div class="col-6">
+                            <h6>Estoque Disponível</h6>
+                            <p class="mb-0">
+                                <i class="bi bi-box me-2"></i>{{ produto.quantidade_disponivel }} {{ produto.unidade }}
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if produto.produtor.telefone %}
+                        <div class="mb-4">
+                            <h6>Contato</h6>
+                            <p class="mb-0">
+                                <i class="bi bi-telephone me-2"></i>{{ produto.produtor.telefone }}
+                            </p>
+                        </div>
+                    {% endif %}
+
+                    <!-- Ações -->
+                    <div class="d-flex gap-2 flex-wrap">
+                        {% if user.is_authenticated and user.user_type == 'comprador' %}
+                            <form method="post" action="{% url 'adicionar_carrinho' produto.pk %}" class="flex-grow-1">
+                                {% csrf_token %}
+                                <div class="input-group mb-3">
+                                    <input type="number" name="quantidade" class="form-control" value="1" min="1" max="{{ produto.quantidade_disponivel }}">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-cart-plus me-2"></i>Adicionar ao Carrinho
+                                    </button>
+                                </div>
+                            </form>
+                        {% elif not user.is_authenticated %}
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <a href="{% url 'login' %}">Faça login</a> para adicionar produtos ao carrinho.
+                            </div>
+                        {% endif %}
+
+                        {% if user == produto.produtor %}
+                            <a href="{% url 'produto_update' produto.pk %}" class="btn btn-outline-success">
+                                <i class="bi bi-pencil me-2"></i>Editar
+                            </a>
+                            <a href="{% url 'produto_delete' produto.pk %}" class="btn btn-outline-danger">
+                                <i class="bi bi-trash me-2"></i>Excluir
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Informações Adicionais -->
+                    <div class="mt-4 pt-4 border-top">
+                        <small class="text-muted">
+                            <i class="bi bi-calendar me-1"></i>Cadastrado em {{ produto.data_criacao|date:"d/m/Y" }}
+                            {% if produto.data_atualizacao != produto.data_criacao %}
+                                | Atualizado em {{ produto.data_atualizacao|date:"d/m/Y" }}
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Produtos Relacionados -->
+    <div class="mt-5">
+        <h3 class="section-title">Produtos Relacionados</h3>
+        <div class="row">
+            {% for produto_relacionado in produto.categoria.produtos.all|slice:":4" %}
+                {% if produto_relacionado != produto %}
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card produto-card h-100">
+                            {% if produto_relacionado.imagem %}
+                                <img src="{{ produto_relacionado.imagem.url }}" class="card-img-top" alt="{{ produto_relacionado.nome }}">
+                            {% else %}
+                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                    <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="card-body d-flex flex-column">
+                                <h6 class="card-title">{{ produto_relacionado.nome }}</h6>
+                                <p class="card-text text-muted small flex-grow-1">{{ produto_relacionado.descricao|truncatewords:10 }}</p>
+                                <div class="mt-auto">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-success fw-bold">R$ {{ produto_relacionado.preco }}</span>
+                                        <a href="{% url 'produto_detail' produto_relacionado.pk %}" class="btn btn-sm btn-outline-success">Ver</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

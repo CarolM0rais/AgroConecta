@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Erro interno - AgroConecta{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="py-5">
+                <i class="bi bi-exclamation-circle text-danger" style="font-size: 6rem;"></i>
+                <h1 class="display-4 text-muted mt-3">500</h1>
+                <h2 class="text-muted">Erro interno do servidor</h2>
+                <p class="lead text-muted mb-4">
+                    Ops! Algo deu errado em nossos servidores. Nossa equipe foi notificada e está trabalhando para resolver o problema.
+                </p>
+                
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                    <a href="{% url 'home' %}" class="btn btn-success">
+                        <i class="bi bi-house me-2"></i>Voltar ao Início
+                    </a>
+                    <button onclick="window.location.reload()" class="btn btn-outline-success">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Tentar Novamente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

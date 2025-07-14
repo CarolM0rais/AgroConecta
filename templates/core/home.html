@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AgroConecta - Conectando o Campo à Mesa{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="fade-in-up">Conectando o Campo à Mesa</h1>
+                <p class="lead fade-in-up">Plataforma que conecta produtores rurais diretamente aos compradores, garantindo produtos frescos e preços justos.</p>
+                <div class="fade-in-up">
+                    <a href="{% url 'produto_list' %}" class="btn btn-light btn-lg me-3">
+                        <i class="bi bi-grid me-2"></i>Ver Produtos
+                    </a>
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'register' %}" class="btn btn-outline-light btn-lg">
+                            <i class="bi bi-person-plus me-2"></i>Cadastrar-se
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="bi bi-leaf" style="font-size: 15rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Produtos Recentes -->
+<section class="container mb-5">
+    <h2 class="section-title text-center">Produtos Recentes</h2>
+    
+    {% if produtos_recentes %}
+        <div class="row">
+            {% for produto in produtos_recentes %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card produto-card fade-in-up">
+                        {% if produto.imagem %}
+                            <img src="{{ produto.imagem.url }}" class="card-img-top" alt="{{ produto.nome }}">
+                        {% else %}
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title">{{ produto.nome }}</h5>
+                                <span class="badge badge-categoria">{{ produto.categoria.nome }}</span>
+                            </div>
+                            
+                            <p class="card-text text-muted">{{ produto.descricao|truncatewords:15 }}</p>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="produto-preco">R$ {{ produto.preco }}</span>
+                                    <small class="text-muted">/ {{ produto.unidade }}</small>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="bi bi-person me-1"></i>{{ produto.produtor.username }}
+                                </small>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <a href="{% url 'produto_detail' produto.pk %}" class="btn btn-success btn-sm">
+                                    <i class="bi bi-eye me-1"></i>Ver Detalhes
+                                </a>
+                                {% if user.is_authenticated and user.user_type == 'comprador' %}
+                                    <form method="post" action="{% url 'adicionar_carrinho' produto.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="quantidade" value="1">
+                                        <button type="submit" class="btn btn-outline-success btn-sm">
+                                            <i class="bi bi-cart-plus me-1"></i>Carrinho
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'produto_list' %}" class="btn btn-outline-success btn-lg">
+                <i class="bi bi-grid me-2"></i>Ver Todos os Produtos
+            </a>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-box text-muted" style="font-size: 4rem;"></i>
+            <h4 class="text-muted mt-3">Nenhum produto disponível</h4>
+            <p class="text-muted">Seja o primeiro a cadastrar um produto!</p>
+            {% if user.is_authenticated and user.user_type == 'produtor' %}
+                <a href="{% url 'produto_create' %}" class="btn btn-success">
+                    <i class="bi bi-plus-circle me-2"></i>Cadastrar Produto
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</section>
+
+<!-- Categorias -->
+<section class="container mb-5">
+    <h2 class="section-title text-center">Categorias</h2>
+    
+    {% if categorias %}
+        <div class="row">
+            {% for categoria in categorias %}
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+                    <div class="card text-center fade-in-up">
+                        <div class="card-body">
+                            <i class="bi bi-tag text-success" style="font-size: 2rem;"></i>
+                            <h6 class="card-title mt-2">{{ categoria.nome }}</h6>
+                            <small class="text-muted">{{ categoria.produtos.count }} produto{{ categoria.produtos.count|pluralize }}</small>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'categoria_list' %}" class="btn btn-outline-success">
+                <i class="bi bi-tags me-2"></i>Ver Todas as Categorias
+            </a>
+        </div>
+    {% else %}
+        <div class="text-center py-3">
+            <p class="text-muted">Nenhuma categoria cadastrada ainda.</p>
+        </div>
+    {% endif %}
+</section>
+
+<!-- Como Funciona -->
+<section class="bg-white py-5">
+    <div class="container">
+        <h2 class="section-title text-center">Como Funciona</h2>
+        
+        <div class="row">
+            <div class="col-lg-4 text-center mb-4">
+                <div class="fade-in-up">
+                    <i class="bi bi-person-plus text-success" style="font-size: 3rem;"></i>
+                    <h4 class="mt-3">1. Cadastre-se</h4>
+                    <p class="text-muted">Crie sua conta como produtor ou comprador e faça parte da nossa comunidade.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 text-center mb-4">
+                <div class="fade-in-up">
+                    <i class="bi bi-search text-success" style="font-size: 3rem;"></i>
+                    <h4 class="mt-3">2. Explore</h4>
+                    <p class="text-muted">Navegue pelos produtos disponíveis ou cadastre seus próprios produtos para venda.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 text-center mb-4">
+                <div class="fade-in-up">
+                    <i class="bi bi-handshake text-success" style="font-size: 3rem;"></i>
+                    <h4 class="mt-3">3. Conecte-se</h4>
+                    <p class="text-muted">Faça pedidos diretamente aos produtores e estabeleça relações comerciais duradouras.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+{% if not user.is_authenticated %}
+<section class="bg-success text-white py-5">
+    <div class="container text-center">
+        <h2>Pronto para começar?</h2>
+        <p class="lead mb-4">Junte-se à nossa comunidade e faça parte da revolução no agronegócio.</p>
+        <a href="{% url 'register' %}" class="btn btn-light btn-lg me-3">
+            <i class="bi bi-person-plus me-2"></i>Cadastrar como Comprador
+        </a>
+        <a href="{% url 'register' %}" class="btn btn-outline-light btn-lg">
+            <i class="bi bi-shop me-2"></i>Cadastrar como Produtor
+        </a>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Adicionar animação aos elementos quando entram na viewport
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('fade-in-up');
+            }
+        });
+    }, observerOptions);
+
+    // Observar todos os cards
+    document.querySelectorAll('.card').forEach(card => {
+        observer.observe(card);
+    });
+</script>
+{% endblock %}
+

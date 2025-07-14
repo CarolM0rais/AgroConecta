@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if produto %}Editar Produto{% else %}Novo Produto{% endif %} - AgroConecta
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Início</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'meus_produtos' %}">Meus Produtos</a></li>
+            <li class="breadcrumb-item active">
+                {% if produto %}Editar Produto{% else %}Novo Produto{% endif %}
+            </li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        {% if produto %}
+                            <i class="bi bi-pencil me-2"></i>Editar Produto
+                        {% else %}
+                            <i class="bi bi-plus-circle me-2"></i>Novo Produto
+                        {% endif %}
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% crispy form %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dicas para Produtores -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h5><i class="bi bi-lightbulb me-2"></i>Dicas para um bom cadastro</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-check-circle text-success me-2"></i>Nome do Produto</h6>
+                            <p class="small text-muted">Use nomes claros e descritivos. Ex: "Tomate Cereja Orgânico"</p>
+                            
+                            <h6><i class="bi bi-check-circle text-success me-2"></i>Descrição</h6>
+                            <p class="small text-muted">Inclua informações sobre qualidade, origem e características especiais.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-check-circle text-success me-2"></i>Preço</h6>
+                            <p class="small text-muted">Defina preços competitivos e justos para o mercado local.</p>
+                            
+                            <h6><i class="bi bi-check-circle text-success me-2"></i>Imagem</h6>
+                            <p class="small text-muted">Use fotos de boa qualidade que mostrem bem o produto.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

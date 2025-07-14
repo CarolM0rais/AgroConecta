@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Produtos - AgroConecta{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Cabeçalho -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1><i class="bi bi-grid me-2"></i>Produtos</h1>
+            <p class="text-muted">Explore nossa variedade de produtos agrícolas frescos</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            {% if user.is_authenticated and user.user_type == 'produtor' %}
+                <a href="{% url 'produto_create' %}" class="btn btn-success">
+                    <i class="bi bi-plus-circle me-2"></i>Novo Produto
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Formulário de Busca -->
+    <div class="card mb-4">
+        <div class="card-body">
+            {% crispy form %}
+        </div>
+    </div>
+
+    <!-- Resultados -->
+    {% if produtos %}
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <p class="text-muted">
+                    Mostrando {{ produtos|length }} de {{ paginator.count }} produto{{ paginator.count|pluralize }}
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <div class="btn-group" role="group">
+                    <input type="radio" class="btn-check" name="view" id="grid-view" checked>
+                    <label class="btn btn-outline-success" for="grid-view">
+                        <i class="bi bi-grid"></i>
+                    </label>
+                    <input type="radio" class="btn-check" name="view" id="list-view">
+                    <label class="btn btn-outline-success" for="list-view">
+                        <i class="bi bi-list"></i>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid de Produtos -->
+        <div id="produtos-grid" class="row">
+            {% for produto in produtos %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card produto-card h-100">
+                        {% if produto.imagem %}
+                            <img src="{{ produto.imagem.url }}" class="card-img-top" alt="{{ produto.nome }}">
+                        {% else %}
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title">{{ produto.nome }}</h5>
+                                <span class="badge badge-categoria">{{ produto.categoria.nome }}</span>
+                            </div>
+                            
+                            <p class="card-text text-muted flex-grow-1">{{ produto.descricao|truncatewords:20 }}</p>
+                            
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="produto-preco">R$ {{ produto.preco }}</span>
+                                        <small class="text-muted">/ {{ produto.unidade }}</small>
+                                    </div>
+                                    <small class="text-muted">
+                                        Estoque: {{ produto.quantidade_disponivel }}
+                                    </small>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="bi bi-person me-1"></i>{{ produto.produtor.username }}
+                                </small>
+                            </div>
+                            
+                            <div class="mt-auto">
+                                <a href="{% url 'produto_detail' produto.pk %}" class="btn btn-success btn-sm me-2">
+                                    <i class="bi bi-eye me-1"></i>Ver Detalhes
+                                </a>
+                                {% if user.is_authenticated and user.user_type == 'comprador' %}
+                                    <form method="post" action="{% url 'adicionar_carrinho' produto.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="quantidade" value="1">
+                                        <button type="submit" class="btn btn-outline-success btn-sm">
+                                            <i class="bi bi-cart-plus me-1"></i>Carrinho
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Lista de Produtos (oculta por padrão) -->
+        <div id="produtos-list" class="d-none">
+            {% for produto in produtos %}
+                <div class="card mb-3">
+                    <div class="row g-0">
+                        <div class="col-md-3">
+                            {% if produto.imagem %}
+                                <img src="{{ produto.imagem.url }}" class="img-fluid rounded-start h-100" style="object-fit: cover;" alt="{{ produto.nome }}">
+                            {% else %}
+                                <div class="bg-light d-flex align-items-center justify-content-center h-100 rounded-start">
+                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-9">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h5 class="card-title">{{ produto.nome }}</h5>
+                                    <span class="badge badge-categoria">{{ produto.categoria.nome }}</span>
+                                </div>
+                                
+                                <p class="card-text">{{ produto.descricao|truncatewords:30 }}</p>
+                                
+                                <div class="row align-items-center">
+                                    <div class="col-md-6">
+                                        <span class="produto-preco">R$ {{ produto.preco }}</span>
+                                        <small class="text-muted">/ {{ produto.unidade }}</small>
+                                        <br>
+                                        <small class="text-muted">
+                                            <i class="bi bi-person me-1"></i>{{ produto.produtor.username }}
+                                            | Estoque: {{ produto.quantidade_disponivel }}
+                                        </small>
+                                    </div>
+                                    <div class="col-md-6 text-md-end">
+                                        <a href="{% url 'produto_detail' produto.pk %}" class="btn btn-success me-2">
+                                            <i class="bi bi-eye me-1"></i>Ver Detalhes
+                                        </a>
+                                        {% if user.is_authenticated and user.user_type == 'comprador' %}
+                                            <form method="post" action="{% url 'adicionar_carrinho' produto.pk %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="quantidade" value="1">
+                                                <button type="submit" class="btn btn-outline-success">
+                                                    <i class="bi bi-cart-plus me-1"></i>Carrinho
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Paginação -->
+        {% if is_paginated %}
+            <nav aria-label="Navegação de páginas">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if request.GET.busca %}&busca={{ request.GET.busca }}{% endif %}{% if request.GET.categoria %}&categoria={{ request.GET.categoria }}{% endif %}">
+                                <i class="bi bi-chevron-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.busca %}&busca={{ request.GET.busca }}{% endif %}{% if request.GET.categoria %}&categoria={{ request.GET.categoria }}{% endif %}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if request.GET.busca %}&busca={{ request.GET.busca }}{% endif %}{% if request.GET.categoria %}&categoria={{ request.GET.categoria }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.busca %}&busca={{ request.GET.busca }}{% endif %}{% if request.GET.categoria %}&categoria={{ request.GET.categoria }}{% endif %}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.busca %}&busca={{ request.GET.busca }}{% endif %}{% if request.GET.categoria %}&categoria={{ request.GET.categoria }}{% endif %}">
+                                <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
+            <h4 class="text-muted mt-3">Nenhum produto encontrado</h4>
+            <p class="text-muted">Tente ajustar os filtros de busca ou explore outras categorias.</p>
+            <a href="{% url 'produto_list' %}" class="btn btn-outline-success">
+                <i class="bi bi-arrow-clockwise me-2"></i>Limpar Filtros
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Alternar entre visualização em grid e lista
+    document.getElementById('grid-view').addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('produtos-grid').classList.remove('d-none');
+            document.getElementById('produtos-list').classList.add('d-none');
+        }
+    });
+
+    document.getElementById('list-view').addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('produtos-grid').classList.add('d-none');
+            document.getElementById('produtos-list').classList.remove('d-none');
+        }
+    });
+</script>
+{% endblock %}
+

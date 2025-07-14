@@ -1,0 +1,289 @@
+/* Variáveis CSS para cores */
+:root {
+    --primary-green: #198754;
+    --light-green: #20c997;
+    --dark-green: #146c43;
+    --success-green: #28a745;
+    --white: #ffffff;
+    --light-gray: #f8f9fa;
+    --border-color: #dee2e6;
+}
+
+/* Reset e configurações gerais */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--light-gray);
+    padding-top: 76px; /* Compensar navbar fixa */
+}
+
+/* Navbar customizada */
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.navbar-nav .nav-link {
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    color: var(--light-green) !important;
+}
+
+/* Main content */
+.main-content {
+    min-height: calc(100vh - 200px);
+}
+
+/* Cards customizados */
+.card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    background-color: var(--primary-green);
+    color: white;
+    border-bottom: none;
+    font-weight: 600;
+}
+
+/* Botões customizados */
+.btn-success {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+    background-color: var(--dark-green);
+    border-color: var(--dark-green);
+    transform: translateY(-2px);
+}
+
+.btn-outline-success {
+    color: var(--primary-green);
+    border-color: var(--primary-green);
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-success:hover {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    transform: translateY(-2px);
+}
+
+/* Hero section */
+.hero-section {
+    background: linear-gradient(135deg, var(--primary-green), var(--light-green));
+    color: white;
+    padding: 80px 0;
+    margin-bottom: 50px;
+}
+
+.hero-section h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.hero-section p {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+/* Seções */
+.section-title {
+    color: var(--primary-green);
+    font-weight: 700;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background-color: var(--light-green);
+}
+
+/* Cards de produto */
+.produto-card {
+    height: 100%;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.produto-card .card-img-top {
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.produto-card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+.produto-preco {
+    color: var(--primary-green);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* Badges customizados */
+.badge-success {
+    background-color: var(--primary-green);
+}
+
+.badge-categoria {
+    background-color: var(--light-green);
+    color: white;
+    font-weight: 500;
+}
+
+/* Formulários */
+.form-control:focus {
+    border-color: var(--light-green);
+    box-shadow: 0 0 0 0.2rem rgba(32, 201, 151, 0.25);
+}
+
+.form-select:focus {
+    border-color: var(--light-green);
+    box-shadow: 0 0 0 0.2rem rgba(32, 201, 151, 0.25);
+}
+
+/* Alertas customizados */
+.alert-success {
+    background-color: rgba(32, 201, 151, 0.1);
+    border-color: var(--light-green);
+    color: var(--dark-green);
+}
+
+/* Paginação */
+.pagination .page-link {
+    color: var(--primary-green);
+    border-color: var(--border-color);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+}
+
+.pagination .page-link:hover {
+    color: var(--dark-green);
+    background-color: rgba(32, 201, 151, 0.1);
+}
+
+/* Tabelas */
+.table th {
+    background-color: var(--primary-green);
+    color: white;
+    border: none;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > td {
+    background-color: rgba(32, 201, 151, 0.05);
+}
+
+/* Footer */
+footer {
+    background: linear-gradient(135deg, var(--dark-green), var(--primary-green)) !important;
+}
+
+/* Animações */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .hero-section h1 {
+        font-size: 2.5rem;
+    }
+    
+    .hero-section p {
+        font-size: 1.1rem;
+    }
+    
+    .navbar-brand {
+        font-size: 1.25rem;
+    }
+}
+
+/* Estados de loading */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Hover effects para links */
+a {
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--primary-green);
+}
+
+/* Customização do dropdown */
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(32, 201, 151, 0.1);
+    color: var(--primary-green);
+}
+
+/* Estilo para imagens de produto */
+.produto-imagem {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+/* Carrinho */
+.carrinho-item {
+    background-color: white;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Status badges */
+.status-pendente { background-color: #ffc107; }
+.status-confirmado { background-color: #17a2b8; }
+.status-em-preparacao { background-color: #fd7e14; }
+.status-enviado { background-color: #6f42c1; }
+.status-entregue { background-color: #28a745; }
+.status-cancelado { background-color: #dc3545; }
+

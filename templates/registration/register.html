@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Cadastrar - AgroConecta{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card shadow-lg border-0 mt-5">
+                <div class="card-header text-center">
+                    <h3><i class="bi bi-person-plus me-2"></i>Criar Conta</h3>
+                    <p class="mb-0 text-muted">Junte-se à nossa comunidade</p>
+                </div>
+                <div class="card-body p-4">
+                    {% crispy form %}
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-center">
+                        <p class="mb-0">Já tem uma conta?</p>
+                        <a href="{% url 'login' %}" class="btn btn-outline-success">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Entrar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informações sobre tipos de usuário -->
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h5><i class="bi bi-shop me-2"></i>Produtor</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check-circle text-success me-2"></i>Cadastre seus produtos</li>
+                        <li><i class="bi bi-check-circle text-success me-2"></i>Gerencie seu estoque</li>
+                        <li><i class="bi bi-check-circle text-success me-2"></i>Receba pedidos diretamente</li>
+                        <li><i class="bi bi-check-circle text-success me-2"></i>Controle suas vendas</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h5><i class="bi bi-person me-2"></i>Comprador</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check-circle text-success me-2"></i>Explore produtos frescos</li>
+                        <li><i class="bi bi-check-circle text-success me-2"></i>Compre diretamente do produtor</li>
+                        <li><i class="bi bi-check-circle text-success me-2"></i>Acompanhe seus pedidos</li>
+                        <li><i class="bi bi-check-circle text-success me-2"></i>Preços justos e transparentes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

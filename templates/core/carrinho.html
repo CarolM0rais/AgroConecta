@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Carrinho - AgroConecta{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Cabeçalho -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1><i class="bi bi-cart me-2"></i>Meu Carrinho</h1>
+            <p class="text-muted">Revise seus produtos antes de finalizar o pedido</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'produto_list' %}" class="btn btn-outline-success">
+                <i class="bi bi-arrow-left me-2"></i>Continuar Comprando
+            </a>
+        </div>
+    </div>
+
+    {% if carrinho %}
+        <div class="row">
+            <!-- Itens do Carrinho -->
+            <div class="col-lg-8">
+                {% for produto_id, item in carrinho.items %}
+                    <div class="carrinho-item">
+                        <div class="row align-items-center">
+                            <div class="col-md-2">
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                    <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <h6 class="mb-1">{{ item.nome }}</h6>
+                                <small class="text-muted">
+                                    <i class="bi bi-person me-1"></i>{{ item.produtor }}
+                                </small>
+                            </div>
+                            <div class="col-md-2">
+                                <span class="text-success fw-bold">R$ {{ item.preco }}</span>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="input-group input-group-sm">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="updateQuantity('{{ produto_id }}', -1)">
+                                        <i class="bi bi-dash"></i>
+                                    </button>
+                                    <input type="text" class="form-control text-center" value="{{ item.quantidade }}" readonly>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="updateQuantity('{{ produto_id }}', 1)">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                <strong class="text-success">R$ {{ item.preco|floatformat:2 }}</strong>
+                                <br>
+                                <button class="btn btn-sm btn-outline-danger mt-1" onclick="removeItem('{{ produto_id }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Resumo do Pedido -->
+            <div class="col-lg-4">
+                <div class="card border-success">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>Resumo do Pedido</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <span>R$ {{ total|floatformat:2 }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Frete:</span>
+                            <span class="text-success">A combinar</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Total:</strong>
+                            <strong class="text-success">R$ {{ total|floatformat:2 }}</strong>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <a href="{% url 'finalizar_pedido' %}" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle me-2"></i>Finalizar Pedido
+                            </a>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                O frete será calculado diretamente com o produtor.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informações de Segurança -->
+                <div class="card mt-3 border-info">
+                    <div class="card-body text-center">
+                        <i class="bi bi-shield-check text-info" style="font-size: 2rem;"></i>
+                        <h6 class="mt-2">Compra Segura</h6>
+                        <small class="text-muted">
+                            Seus dados estão protegidos e a transação é segura.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Carrinho Vazio -->
+        <div class="text-center py-5">
+            <i class="bi bi-cart-x text-muted" style="font-size: 4rem;"></i>
+            <h4 class="text-muted mt-3">Seu carrinho está vazio</h4>
+            <p class="text-muted">Explore nossos produtos e adicione itens ao seu carrinho.</p>
+            <a href="{% url 'produto_list' %}" class="btn btn-success btn-lg">
+                <i class="bi bi-grid me-2"></i>Ver Produtos
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function updateQuantity(produtoId, change) {
+        // Implementar atualização de quantidade via AJAX
+        console.log('Atualizar quantidade:', produtoId, change);
+        // Por enquanto, apenas recarregar a página
+        location.reload();
+    }
+
+    function removeItem(produtoId) {
+        if (confirm('Tem certeza que deseja remover este item do carrinho?')) {
+            // Implementar remoção via AJAX
+            console.log('Remover item:', produtoId);
+            // Por enquanto, apenas recarregar a página
+            location.reload();
+        }
+    }
+</script>
+{% endblock %}
+

@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Finalizar Pedido - AgroConecta{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Cabeçalho -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1><i class="bi bi-bag-check me-2"></i>Finalizar Pedido</h1>
+            <p class="text-muted">Confirme os detalhes do seu pedido e finalize a compra</p>
+        </div>
+    </div>
+
+    {% if carrinho %}
+        <div class="row">
+            <!-- Resumo do Pedido -->
+            <div class="col-lg-7 mb-4">
+                <div class="card border-success">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Itens do Pedido</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Produto</th>
+                                        <th class="text-center">Qtd</th>
+                                        <th class="text-end">Preço Unitário</th>
+                                        <th class="text-end">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+    {% for item in carrinho %}
+        <tr>
+            <td>
+                <h6 class="mb-0">{{ item.nome }}</h6>
+                <small class="text-muted">Produtor: {{ item.produtor }}</small>
+            </td>
+            <td class="text-center">{{ item.quantidade }}</td>
+            <td class="text-end">R$ {{ item.preco|floatformat:2 }}</td>
+            <td class="text-end">R$ {{ item.subtotal|floatformat:2 }}</td>
+        </tr>
+    {% endfor %}
+</tbody>
+
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="3" class="text-end">Total:</th>
+                                        <th class="text-end text-success fs-5">R$ {{ total|floatformat:2 }}</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulário de Finalização -->
+            <div class="col-lg-5 mb-4">
+                <div class="card shadow-lg border-0">
+                    <div class="card-header">
+                        <h3 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Detalhes do Pedido</h3>
+                    </div>
+                    <div class="card-body p-4">
+                        <form method="post">
+                            {% csrf_token %}
+                            {% crispy form %}
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Informações de Contato -->
+                <div class="card mt-3 border-info">
+                    <div class="card-body">
+                        <h5 class="card-title text-info"><i class="bi bi-info-circle me-2"></i>Informações Importantes</h5>
+                        <p class="card-text small text-muted">
+                            Após finalizar o pedido, o produtor será notificado e entrará em contato para combinar a entrega e o pagamento.
+                            Certifique-se de que suas informações de contato (telefone e endereço) estejam atualizadas em seu perfil.
+                        </p>
+                        <p class="card-text small text-muted mb-0">
+                            Você pode visualizar seus pedidos em <a href="{% url 'meus_pedidos' %}">Meus Pedidos</a>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Carrinho Vazio -->
+        <div class="text-center py-5">
+            <i class="bi bi-cart-x text-muted" style="font-size: 4rem;"></i>
+            <h4 class="text-muted mt-3">Seu carrinho está vazio</h4>
+            <p class="text-muted">Não é possível finalizar um pedido sem itens no carrinho.</p>
+            <a href="{% url 'produto_list' %}" class="btn btn-success btn-lg">
+                <i class="bi bi-grid me-2"></i>Ver Produtos
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
