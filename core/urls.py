@@ -32,5 +32,6 @@ urlpatterns = [
     path('adicionar-carrinho/<int:produto_id>/', views.adicionar_ao_carrinho, name='adicionar_carrinho'),
     path('finalizar-pedido/', views.finalizar_pedido, name='finalizar_pedido'),
     path('pedido/<int:pk>/', views.PedidoDetailView.as_view(), name='pedido_detail'),
+    path('pedido/<int:pk>/atualizar/', views.atualizar_status_pedido, name='atualizar_status_pedido'),
 ]
 

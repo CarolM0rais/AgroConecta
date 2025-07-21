@@ -104,6 +104,7 @@
 </section>
 
 <!-- Categorias -->
+<!-- Categorias -->
 <section class="container mb-5">
     <h2 class="section-title text-center">Categorias</h2>
     
@@ -111,13 +112,15 @@
         <div class="row">
             {% for categoria in categorias %}
                 <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
-                    <div class="card text-center fade-in-up">
-                        <div class="card-body">
-                            <i class="bi bi-tag text-success" style="font-size: 2rem;"></i>
-                            <h6 class="card-title mt-2">{{ categoria.nome }}</h6>
-                            <small class="text-muted">{{ categoria.produtos.count }} produto{{ categoria.produtos.count|pluralize }}</small>
+                    <a href="{% url 'produto_list' %}?categoria={{ categoria.pk }}" class="text-decoration-none">
+                        <div class="card text-center fade-in-up">
+                            <div class="card-body">
+                                <i class="bi bi-tag text-success" style="font-size: 2rem;"></i>
+                                <h6 class="card-title mt-2">{{ categoria.nome }}</h6>
+                                <small class="text-muted">{{ categoria.produtos.count }} produto{{ categoria.produtos.count|pluralize }}</small>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             {% endfor %}
         </div>
@@ -133,6 +136,7 @@
         </div>
     {% endif %}
 </section>
+
 
 <!-- Como Funciona -->
 <section class="bg-white py-5">

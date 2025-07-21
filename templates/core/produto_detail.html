@@ -31,7 +31,11 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <h1 class="card-title">{{ produto.nome }}</h1>
-                        <span class="badge badge-categoria fs-6">{{ produto.categoria.nome }}</span>
+                        {% if produto.categoria %}
+                            <span class="badge badge-categoria fs-6">{{ produto.categoria.nome }}</span>
+                        {% else %}
+                            <span class="badge badge-categoria bg-secondary fs-6">Sem categoria</span>
+                        {% endif %}
                     </div>
 
                     <div class="mb-4">
@@ -41,9 +45,14 @@
 
                     <div class="mb-4">
                         <h5>Descrição</h5>
+                        {% if produto.categoria %}
+                            <p class="text-muted"><strong>Categoria:</strong> {{ produto.categoria.nome }}</p>
+                        {% else %}
+                            <p class="text-muted"><strong>Categoria:</strong> Sem categoria</p>
+                        {% endif %}
                         <p class="text-muted">{{ produto.descricao }}</p>
                     </div>
-
+                    
                     <div class="row mb-4">
                         <div class="col-6">
                             <h6>Produtor</h6>
@@ -64,6 +73,15 @@
                             <h6>Contato</h6>
                             <p class="mb-0">
                                 <i class="bi bi-telephone me-2"></i>{{ produto.produtor.telefone }}
+                            </p>
+                        </div>
+                    {% endif %}
+
+                    {% if produto.produtor.cidade %}
+                        <div class="mb-4">
+                            <h6>Cidade</h6>
+                            <p class="mb-0">
+                                <i class="bi bi-geo-alt me-2"></i>{{ produto.produtor.cidade.nome }}
                             </p>
                         </div>
                     {% endif %}
@@ -123,26 +141,23 @@
                                 <img src="{{ produto_relacionado.imagem.url }}" class="card-img-top" alt="{{ produto_relacionado.nome }}">
                             {% else %}
                                 <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                                    <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
+                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
                                 </div>
                             {% endif %}
-                            
                             <div class="card-body d-flex flex-column">
-                                <h6 class="card-title">{{ produto_relacionado.nome }}</h6>
-                                <p class="card-text text-muted small flex-grow-1">{{ produto_relacionado.descricao|truncatewords:10 }}</p>
-                                <div class="mt-auto">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="text-success fw-bold">R$ {{ produto_relacionado.preco }}</span>
-                                        <a href="{% url 'produto_detail' produto_relacionado.pk %}" class="btn btn-sm btn-outline-success">Ver</a>
-                                    </div>
-                                </div>
+                                <h5 class="card-title">{{ produto_relacionado.nome }}</h5>
+                                <p class="card-text text-muted">{{ produto_relacionado.descricao|truncatewords:15 }}</p>
+                                <a href="{% url 'produto_detail' produto_relacionado.pk %}" class="btn btn-outline-success mt-auto">
+                                    Ver detalhes
+                                </a>
                             </div>
                         </div>
                     </div>
                 {% endif %}
+            {% empty %}
+                <p class="text-muted">Nenhum produto relacionado disponível.</p>
             {% endfor %}
         </div>
     </div>
 </div>
 {% endblock %}
-

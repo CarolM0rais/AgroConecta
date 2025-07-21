@@ -4,6 +4,8 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, Field
 from crispy_forms.bootstrap import FormActions
 from .models import CustomUser, Produto, Categoria, Pedido
+from .models import Categoria
+from .models import Pedido
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -137,21 +139,15 @@ class PedidoForm(forms.ModelForm):
         )
 
 
+
 class BuscaProdutoForm(forms.Form):
-    """Formulário de busca de produtos"""
-    busca = forms.CharField(
-        max_length=200,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'placeholder': 'Buscar produtos...',
-            'class': 'form-control'
-        })
-    )
+    busca = forms.CharField(required=False, label='Buscar produto')
     categoria = forms.ModelChoiceField(
         queryset=Categoria.objects.all(),
         required=False,
         empty_label="Todas as categorias",
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        label='Categoria'
     )
     
     def __init__(self, *args, **kwargs):
@@ -165,7 +161,26 @@ class BuscaProdutoForm(forms.Form):
                 css_class='form-row'
             ),
             FormActions(
-                Submit('submit', 'Buscar', css_class='btn btn-outline-success')
+                Submit('submit', 'Buscar', css_class='btn btn-success')  # botão verde sólido
             )
         )
 
+
+class AtualizaStatusPedidoForm(forms.ModelForm):
+    class Meta:
+        model = Pedido
+        fields = ['status']
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+        # Só produtores podem atualizar status
+        if user and user.user_type == 'produtor':
+            self.fields['status'].choices = [
+                ('em_preparacao', 'Em Preparação'),
+                ('enviado', 'Enviado'),
+                ('concluido', 'Concluído'),
+            ]
+        else:
+            self.fields['status'].choices = []

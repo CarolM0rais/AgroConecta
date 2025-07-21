@@ -3,6 +3,18 @@ from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 
 
+class Cidade(models.Model):
+    nome = models.CharField(max_length=100, verbose_name='Cidade')
+
+    class Meta:
+        verbose_name = 'Cidade'
+        verbose_name_plural = 'Cidades'
+        ordering = ['nome']
+
+    def __str__(self):
+        return self.nome
+
+
 class CustomUser(AbstractUser):
     """Modelo de usuário customizado"""
     USER_TYPE_CHOICES = [
@@ -26,6 +38,13 @@ class CustomUser(AbstractUser):
         blank=True,
         null=True,
         verbose_name='Endereço'
+    )
+    cidade = models.ForeignKey(
+        Cidade,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        verbose_name='Cidade'
     )
     
     def __str__(self):
@@ -173,4 +192,3 @@ class ItemPedido(models.Model):
     def get_subtotal(self):
         """Calcula o subtotal do item"""
         return self.quantidade * self.preco_unitario
-

@@ -105,7 +105,8 @@
                         <p class="card-text small text-muted">
                             Como produtor, você pode atualizar o status deste pedido.
                         </p>
-                        <form method="post" action="{% url 'admin:core_pedido_change' pedido.pk %}">
+                        <form method="post" action="{% url 'atualizar_status_pedido' pedido.pk %}">
+
                             {% csrf_token %}
                             <div class="mb-3">
                                 <label for="id_status" class="form-label">Atualizar Status:</label>
