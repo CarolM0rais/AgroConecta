@@ -2,6 +2,12 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import CustomUser, Categoria, Produto, Pedido, ItemPedido, Cidade
 
+# Inline para itens do pedido
+class ItemPedidoInline(admin.TabularInline):
+    """Inline para itens do pedido"""
+    model = ItemPedido
+    extra = 0
+    readonly_fields = ('preco_unitario',)
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
@@ -22,13 +28,11 @@ class CustomUserAdmin(UserAdmin):
         }),
     )
 
-
 @admin.register(Cidade)
 class CidadeAdmin(admin.ModelAdmin):
     list_display = ('nome',)
     search_fields = ('nome',)
     ordering = ('nome',)
-
 
 @admin.register(Categoria)
 class CategoriaAdmin(admin.ModelAdmin):
@@ -36,14 +40,6 @@ class CategoriaAdmin(admin.ModelAdmin):
     list_display = ('nome', 'descricao')
     search_fields = ('nome',)
     ordering = ('nome',)
-
-
-class ItemPedidoInline(admin.TabularInline):
-    """Inline para itens do pedido"""
-    model = ItemPedido
-    extra = 0
-    readonly_fields = ('preco_unitario',)
-
 
 @admin.register(Produto)
 class ProdutoAdmin(admin.ModelAdmin):
@@ -69,15 +65,15 @@ class ProdutoAdmin(admin.ModelAdmin):
         }),
     )
 
-
 @admin.register(Pedido)
 class PedidoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'comprador', 'status', 'data_pedido', 'get_total')
-    list_filter = ('status', 'data_pedido')
+    inlines = [ItemPedidoInline]
+
+    list_display = ('id', 'comprador', 'status', 'forma_pagamento', 'data_pedido', 'get_total')
+    list_filter = ('status', 'forma_pagamento', 'data_pedido')
     search_fields = ('comprador__username', 'comprador__email')
     list_editable = ('status',)
     ordering = ('-data_pedido',)
-    inlines = [ItemPedidoInline]
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -94,17 +90,16 @@ class PedidoAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return super().get_readonly_fields(request, obj)
         elif request.user.user_type == 'produtor':
-            # Permitir editar só o status (ou seja, deixar só status editável)
+            # Permitir editar só o status (deixar só status editável)
             return [field.name for field in self.model._meta.fields if field.name != 'status']
         else:
-            return self.model._meta.get_fields()
+            return [field.name for field in self.model._meta.fields]
 
     def save_model(self, request, obj, form, change):
-        # Pode adicionar validação para garantir que produtor só escolha status permitido
+        # Validação para produtores limitarem status
         if request.user.user_type == 'produtor':
             allowed_status = ['em_preparacao', 'enviado']
             if obj.status not in allowed_status:
-                # Força a não permitir status inválido para produtor
                 obj.status = Pedido.objects.get(pk=obj.pk).status if obj.pk else 'pendente'
         super().save_model(request, obj, form, change)
     

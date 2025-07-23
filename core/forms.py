@@ -33,7 +33,7 @@ class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = CustomUser
         fields = ('username', 'email', 'first_name', 'last_name', 'user_type', 
-                 'telefone', 'endereco', 'cidade', 'password1', 'password2')
+                  'telefone', 'endereco', 'cidade', 'password1', 'password2')
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -50,8 +50,9 @@ class CustomUserCreationForm(UserCreationForm):
                 css_class='form-row'
             ),
             Row(
-                Column('user_type', css_class='form-group col-md-6 mb-0'),
-                Column('telefone', css_class='form-group col-md-6 mb-0'),
+                Column('user_type', css_class='form-group col-md-4 mb-0'),
+                Column('telefone', css_class='form-group col-md-4 mb-0'),
+                Column('cidade', css_class='form-group col-md-4 mb-0'),  # <-- Adicionado aqui
                 css_class='form-row'
             ),
             'endereco',
@@ -64,6 +65,7 @@ class CustomUserCreationForm(UserCreationForm):
                 Submit('submit', 'Cadastrar', css_class='btn btn-success')
             )
         )
+
 
 
 class CustomAuthenticationForm(AuthenticationForm):
@@ -135,13 +137,12 @@ class CategoriaForm(forms.ModelForm):
 
 
 class PedidoForm(forms.ModelForm):
-    """Formulário para pedidos"""
-    
     class Meta:
         model = Pedido
-        fields = ['observacoes']
+        fields = ['observacoes', 'forma_pagamento']
         widgets = {
             'observacoes': forms.Textarea(attrs={'rows': 3}),
+            'forma_pagamento': forms.Select(),
         }
     
     def __init__(self, *args, **kwargs):
@@ -149,6 +150,7 @@ class PedidoForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             'observacoes',
+            'forma_pagamento',
             FormActions(
                 Submit('submit', 'Finalizar Pedido', css_class='btn btn-success')
             )

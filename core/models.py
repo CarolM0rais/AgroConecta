@@ -116,8 +116,12 @@ class Produto(models.Model):
         return reverse('produto_detail', kwargs={'pk': self.pk})
 
 
+from django.db import models
+from django.urls import reverse
+from core.models import CustomUser
+  # Ajuste conforme o local do seu modelo de usuário
+
 class Pedido(models.Model):
-    """Modelo para pedidos"""
     STATUS_CHOICES = [
         ('pendente', 'Pendente'),
         ('confirmado', 'Confirmado'),
@@ -126,7 +130,14 @@ class Pedido(models.Model):
         ('entregue', 'Entregue'),
         ('cancelado', 'Cancelado'),
     ]
-    
+
+    FORMA_PAGAMENTO_CHOICES = [
+        ('boleto', 'Boleto'),
+        ('cartao', 'Cartão de Crédito'),
+        ('pix', 'PIX'),
+        ('dinheiro,','DINHEIRO'),
+    ]
+
     comprador = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
@@ -134,15 +145,16 @@ class Pedido(models.Model):
         limit_choices_to={'user_type': 'comprador'},
         verbose_name='Comprador'
     )
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='pendente',
-        verbose_name='Status'
-    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente', verbose_name='Status')
     data_pedido = models.DateTimeField(auto_now_add=True, verbose_name='Data do Pedido')
     data_atualizacao = models.DateTimeField(auto_now=True, verbose_name='Data de Atualização')
     observacoes = models.TextField(blank=True, null=True, verbose_name='Observações')
+    forma_pagamento = models.CharField(
+        max_length=20,
+        choices=FORMA_PAGAMENTO_CHOICES,
+        default='boleto',
+        verbose_name='Forma de Pagamento'
+    )
     
     class Meta:
         verbose_name = 'Pedido'
@@ -153,12 +165,26 @@ class Pedido(models.Model):
         return f"Pedido #{self.pk} - {self.comprador.username}"
     
     def get_total(self):
-        """Calcula o total do pedido"""
         return sum(item.get_subtotal() for item in self.itens.all())
     
     def get_absolute_url(self):
         return reverse('pedido_detail', kwargs={'pk': self.pk})
 
+
+    class Meta:
+        verbose_name = 'Pedido'
+        verbose_name_plural = 'Pedidos'
+        ordering = ['-data_pedido']
+
+    def __str__(self):
+        return f"Pedido #{self.pk} - {self.comprador.username}"
+
+    def get_total(self):
+        """Calcula o valor total do pedido com base nos itens."""
+        return sum(item.get_subtotal() for item in self.itens.all())
+
+    def get_absolute_url(self):
+        return reverse('pedido_detail', kwargs={'pk': self.pk})
 
 class ItemPedido(models.Model):
     """Modelo para itens do pedido"""

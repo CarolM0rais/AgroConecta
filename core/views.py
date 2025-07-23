@@ -7,7 +7,6 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-
 from .models import CustomUser, Produto, Categoria, Pedido, ItemPedido
 from .forms import (
     CustomUserCreationForm, ProdutoForm, CategoriaForm,
@@ -35,11 +34,9 @@ def home(request):
 def avaliar_pedido(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id, comprador=request.user)
 
-    # Permite avaliação só se pedido entregue
     if pedido.status != 'entregue':
         return redirect('pedido_detail', pk=pedido_id)
 
-    # Evita avaliação duplicada
     if hasattr(pedido, 'avaliacao'):
         return redirect('pedido_detail', pk=pedido_id)
 
@@ -54,10 +51,8 @@ def avaliar_pedido(request, pedido_id):
         form = AvaliacaoPedidoForm()
 
     return render(request, 'core/avaliar_pedido.html', {'form': form, 'pedido': pedido})
-from django.contrib.auth import login
-from django.shortcuts import render, redirect
-from .forms import CustomUserCreationForm  # ou o formulário que você estiver usando
 
+# Registro de usuário
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
@@ -69,6 +64,7 @@ def register(request):
         form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
 
+# Listagem de produtos com filtro
 class ProdutoListView(ListView):
     model = Produto
     template_name = 'produto_list.html'
@@ -244,6 +240,18 @@ def carrinho(request):
     })
 
 # Finalizar pedido
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Produto, Pedido, ItemPedido
+from .forms import PedidoForm
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Produto, Pedido, ItemPedido
+from .forms import PedidoForm
+
 @login_required
 def finalizar_pedido(request):
     if request.user.user_type != 'comprador':
@@ -260,7 +268,8 @@ def finalizar_pedido(request):
         if form.is_valid():
             pedido = form.save(commit=False)
             pedido.comprador = request.user
-            pedido.save()
+            pedido.status = 'pendente'
+            pedido.save()  # <-- muito importante
 
             for produto_id, item in carrinho.items():
                 produto = get_object_or_404(Produto, pk=produto_id)
@@ -275,13 +284,16 @@ def finalizar_pedido(request):
             request.session.modified = True
 
             messages.success(request, 'Pedido realizado com sucesso!')
-            return redirect('pedido_detail', pk=pedido.pk)
+            return redirect('pedido_detail', pk=pedido.pk)  # pk garantido após save()
+
+        else:
+            messages.error(request, 'Erro ao finalizar o pedido. Verifique os dados.')
+
     else:
         form = PedidoForm()
 
     carrinho_detalhado = []
     total = 0
-
     for produto_id, item in carrinho.items():
         subtotal = item['preco'] * item['quantidade']
         total += subtotal
@@ -296,8 +308,10 @@ def finalizar_pedido(request):
     return render(request, 'core/finalizar_pedido.html', {
         'form': form,
         'carrinho': carrinho_detalhado,
-        'total': total
+        'total': total,
     })
+
+
 
 # Atualizar status do pedido (para produtores)
 @login_required
