@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 
-
 class Cidade(models.Model):
     nome = models.CharField(max_length=100, verbose_name='Cidade')
 
@@ -192,3 +191,14 @@ class ItemPedido(models.Model):
     def get_subtotal(self):
         """Calcula o subtotal do item"""
         return self.quantidade * self.preco_unitario
+
+
+from django.utils import timezone
+
+class AvaliacaoPedido(models.Model):
+    pedido = models.OneToOneField(Pedido, on_delete=models.CASCADE, related_name='avaliacao')
+    nota = models.PositiveSmallIntegerField()  # por exemplo, 1 a 5
+    comentario = models.TextField(blank=True, null=True)
+    criado_em = models.DateTimeField(default=timezone.now)
+
+

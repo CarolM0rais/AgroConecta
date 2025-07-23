@@ -4,6 +4,23 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, Field
 from crispy_forms.bootstrap import FormActions
 from .models import *
+from django import forms
+from .models import AvaliacaoPedido
+
+
+
+from django import forms
+from .models import AvaliacaoPedido
+
+class AvaliacaoPedidoForm(forms.ModelForm):
+    class Meta:
+        model = AvaliacaoPedido
+        fields = ['nota', 'comentario']
+        widgets = {
+            'nota': forms.NumberInput(attrs={'min': 1, 'max': 5}),
+            'comentario': forms.Textarea(attrs={'rows': 4}),
+        }
+
 
 
 class CustomUserCreationForm(UserCreationForm):

@@ -27,6 +27,7 @@
                                 <th>Data do Pedido</th>
                                 <th>Total</th>
                                 <th>Status</th>
+                                <th>Avaliação</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
@@ -38,6 +39,25 @@
                                     <td>{{ pedido.data_pedido|date:"d/m/Y H:i" }}</td>
                                     <td><strong class="text-success">R$ {{ pedido.get_total|floatformat:2 }}</strong></td>
                                     <td><span class="badge status-{{ pedido.status }}">{{ pedido.get_status_display }}</span></td>
+                                    
+                                    <!-- Coluna de Avaliação -->
+                                    <td>
+                                        {% if pedido.status == "Entregue" or pedido.status == "entregue" %}
+                                            {% if pedido.avaliacao %}
+                                                <span class="text-success" title="Pedido Avaliado">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </span>
+                                            {% else %}
+                                                <span class="text-secondary" title="Ainda não avaliado">
+                                                    <i class="bi bi-star"></i>
+                                                </span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">–</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <!-- Ações -->
                                     <td>
                                         <a href="{% url 'pedido_detail' pedido.pk %}" class="btn btn-sm btn-outline-success" title="Ver Detalhes">
                                             <i class="bi bi-eye"></i>
@@ -63,4 +83,3 @@
     {% endif %}
 </div>
 {% endblock %}
-
