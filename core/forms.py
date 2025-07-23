@@ -3,9 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, Field
 from crispy_forms.bootstrap import FormActions
-from .models import CustomUser, Produto, Categoria, Pedido
-from .models import Categoria
-from .models import Pedido
+from .models import *
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -13,11 +11,12 @@ class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
     telefone = forms.CharField(max_length=15, required=False)
     endereco = forms.CharField(widget=forms.Textarea(attrs={'rows': 3}), required=False)
+    cidade = forms.ModelChoiceField(queryset=Cidade.objects.all(), required=False, empty_label="Selecione a cidade")
     
     class Meta:
         model = CustomUser
         fields = ('username', 'email', 'first_name', 'last_name', 'user_type', 
-                 'telefone', 'endereco', 'password1', 'password2')
+                 'telefone', 'endereco', 'cidade', 'password1', 'password2')
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

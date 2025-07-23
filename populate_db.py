@@ -7,14 +7,25 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'AgroConecta.settings')
 django.setup()
 
-from core.models import CustomUser, Categoria, Produto
+from core.models import CustomUser, Categoria, Produto, Cidade
 
 def populate_database():
     print("Populando banco de dados com dados de exemplo...")
-    
+
+    # Criar cidades
+    cidades_data = {
+        'Monte Belo': None,
+        'Muzambinho': None,
+    }
+    for nome_cidade in cidades_data.keys():
+        cidade_obj, created = Cidade.objects.get_or_create(nome=nome_cidade)
+        cidades_data[nome_cidade] = cidade_obj
+        if created:
+            print(f"✓ Cidade {nome_cidade} criada")
+
     # Criar usuários produtores
     produtores = []
-    
+
     if not CustomUser.objects.filter(username='joao_produtor').exists():
         joao = CustomUser.objects.create_user(
             username='joao_produtor',
@@ -24,11 +35,12 @@ def populate_database():
             last_name='Silva',
             user_type='produtor',
             telefone='(11) 99999-1111',
-            endereco='Fazenda São João, Zona Rural, Cidade ABC'
+            endereco='Fazenda São João, Zona Rural, Muzambinho',
+            cidade=cidades_data['Muzambinho']
         )
         produtores.append(joao)
         print("✓ Produtor João Silva criado")
-    
+
     if not CustomUser.objects.filter(username='maria_produtora').exists():
         maria = CustomUser.objects.create_user(
             username='maria_produtora',
@@ -38,11 +50,12 @@ def populate_database():
             last_name='Santos',
             user_type='produtor',
             telefone='(11) 99999-2222',
-            endereco='Sítio Boa Vista, Zona Rural, Cidade XYZ'
+            endereco='Sítio Boa Vista, Zona Rural, Muzambinho',
+            cidade=cidades_data['Muzambinho']
         )
         produtores.append(maria)
         print("✓ Produtora Maria Santos criada")
-    
+
     # Criar usuário comprador
     if not CustomUser.objects.filter(username='carlos_comprador').exists():
         carlos = CustomUser.objects.create_user(
@@ -53,10 +66,11 @@ def populate_database():
             last_name='Oliveira',
             user_type='comprador',
             telefone='(11) 99999-3333',
-            endereco='Rua das Flores, 123, Centro, Cidade ABC'
+            endereco='Rua das Flores, 123, Centro, Monte Belo',
+            cidade=cidades_data['Monte Belo']
         )
         print("✓ Comprador Carlos Oliveira criado")
-    
+
     # Criar categorias
     categorias_data = [
         {'nome': 'Frutas', 'descricao': 'Frutas frescas e saborosas'},
@@ -66,7 +80,7 @@ def populate_database():
         {'nome': 'Temperos', 'descricao': 'Ervas e temperos naturais'},
         {'nome': 'Orgânicos', 'descricao': 'Produtos orgânicos certificados'},
     ]
-    
+
     categorias = {}
     for cat_data in categorias_data:
         categoria, created = Categoria.objects.get_or_create(
@@ -76,11 +90,11 @@ def populate_database():
         categorias[cat_data['nome']] = categoria
         if created:
             print(f"✓ Categoria {cat_data['nome']} criada")
-    
-    # Obter produtores existentes
+
+    # Obter produtores existentes (atualizados)
     joao = CustomUser.objects.get(username='joao_produtor')
     maria = CustomUser.objects.get(username='maria_produtora')
-    
+
     # Criar produtos
     produtos_data = [
         {
@@ -156,7 +170,7 @@ def populate_database():
             'quantidade_disponivel': 40
         }
     ]
-    
+
     for produto_data in produtos_data:
         produto, created = Produto.objects.get_or_create(
             nome=produto_data['nome'],
@@ -171,14 +185,12 @@ def populate_database():
         )
         if created:
             print(f"✓ Produto {produto_data['nome']} criado")
-    
+
     print("\n🎉 Banco de dados populado com sucesso!")
     print("\nCredenciais de acesso:")
-    print("Admin: admin / admin123")
     print("Produtor 1: joao_produtor / 123456")
     print("Produtor 2: maria_produtora / 123456")
     print("Comprador: carlos_comprador / 123456")
 
 if __name__ == '__main__':
     populate_database()
-
