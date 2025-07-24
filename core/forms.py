@@ -1,16 +1,13 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit, Row, Column, Field
+from crispy_forms.layout import Layout, Submit, Row, Column
 from crispy_forms.bootstrap import FormActions
-from .models import *
-from django import forms
-from .models import AvaliacaoPedido
+from .models import (
+    Cidade, CustomUser, Produto, Categoria,
+    Pedido, AvaliacaoPedido, FormaPagamento
+)
 
-
-
-from django import forms
-from .models import AvaliacaoPedido
 
 class AvaliacaoPedidoForm(forms.ModelForm):
     class Meta:
@@ -22,19 +19,17 @@ class AvaliacaoPedidoForm(forms.ModelForm):
         }
 
 
-
 class CustomUserCreationForm(UserCreationForm):
-    """Formulário de criação de usuário customizado"""
     email = forms.EmailField(required=True)
     telefone = forms.CharField(max_length=15, required=False)
     endereco = forms.CharField(widget=forms.Textarea(attrs={'rows': 3}), required=False)
     cidade = forms.ModelChoiceField(queryset=Cidade.objects.all(), required=False, empty_label="Selecione a cidade")
-    
+
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'first_name', 'last_name', 'user_type', 
+        fields = ('username', 'email', 'first_name', 'last_name', 'user_type',
                   'telefone', 'endereco', 'cidade', 'password1', 'password2')
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
@@ -52,7 +47,7 @@ class CustomUserCreationForm(UserCreationForm):
             Row(
                 Column('user_type', css_class='form-group col-md-4 mb-0'),
                 Column('telefone', css_class='form-group col-md-4 mb-0'),
-                Column('cidade', css_class='form-group col-md-4 mb-0'),  # <-- Adicionado aqui
+                Column('cidade', css_class='form-group col-md-4 mb-0'),
                 css_class='form-row'
             ),
             'endereco',
@@ -67,10 +62,7 @@ class CustomUserCreationForm(UserCreationForm):
         )
 
 
-
 class CustomAuthenticationForm(AuthenticationForm):
-    """Formulário de login customizado"""
-    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
@@ -84,16 +76,14 @@ class CustomAuthenticationForm(AuthenticationForm):
 
 
 class ProdutoForm(forms.ModelForm):
-    """Formulário para produtos"""
-    
     class Meta:
         model = Produto
-        fields = ['nome', 'descricao', 'categoria', 'preco', 'unidade', 
-                 'quantidade_disponivel', 'imagem']
+        fields = ['nome', 'descricao', 'categoria', 'preco', 'unidade',
+                  'quantidade_disponivel', 'imagem']
         widgets = {
             'descricao': forms.Textarea(attrs={'rows': 4}),
         }
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
@@ -115,15 +105,13 @@ class ProdutoForm(forms.ModelForm):
 
 
 class CategoriaForm(forms.ModelForm):
-    """Formulário para categorias"""
-    
     class Meta:
         model = Categoria
         fields = ['nome', 'descricao']
         widgets = {
             'descricao': forms.Textarea(attrs={'rows': 3}),
         }
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
@@ -144,7 +132,7 @@ class PedidoForm(forms.ModelForm):
             'observacoes': forms.Textarea(attrs={'rows': 3}),
             'forma_pagamento': forms.Select(),
         }
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
@@ -157,7 +145,6 @@ class PedidoForm(forms.ModelForm):
         )
 
 
-
 class BuscaProdutoForm(forms.Form):
     busca = forms.CharField(required=False, label='Buscar produto')
     categoria = forms.ModelChoiceField(
@@ -167,7 +154,7 @@ class BuscaProdutoForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'}),
         label='Categoria'
     )
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
@@ -179,7 +166,7 @@ class BuscaProdutoForm(forms.Form):
                 css_class='form-row'
             ),
             FormActions(
-                Submit('submit', 'Buscar', css_class='btn btn-success')  # botão verde sólido
+                Submit('submit', 'Buscar', css_class='btn btn-success')
             )
         )
 
@@ -193,12 +180,17 @@ class AtualizaStatusPedidoForm(forms.ModelForm):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
-        # Só produtores podem atualizar status
         if user and user.user_type == 'produtor':
+            # Apenas alguns status são permitidos para produtores
             self.fields['status'].choices = [
                 ('em_preparacao', 'Em Preparação'),
                 ('enviado', 'Enviado'),
-                ('concluido', 'Concluído'),
+                ('entregue', 'Entregue'),
             ]
-        else:
+        elif user and user.user_type == 'comprador':
+            # Compradores não podem mudar status (form sem opções)
             self.fields['status'].choices = []
+            self.fields['status'].widget = forms.HiddenInput()
+        else:
+            # Administradores e outros podem escolher todos os status
+            self.fields['status'].choices = Pedido.STATUS_CHOICES

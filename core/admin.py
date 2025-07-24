@@ -1,15 +1,13 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, Categoria, Produto, Pedido, ItemPedido, Cidade
+from .models import CustomUser, Categoria, Produto, Pedido, ItemPedido, Cidade, FormaPagamento
 
-# Inline para itens do pedido
 class ItemPedidoInline(admin.TabularInline):
     model = ItemPedido
     extra = 0
     readonly_fields = ('preco_unitario',)
 
     def save_new_objects(self, formset, commit=True):
-        # Preenche preco_unitario automaticamente com base no produto
         for form in formset.forms:
             if not form.cleaned_data.get('preco_unitario') and form.cleaned_data.get('produto'):
                 form.instance.preco_unitario = form.cleaned_data['produto'].preco
@@ -114,3 +112,8 @@ class PedidoAdmin(admin.ModelAdmin):
         return f"R$ {obj.get_total():.2f}"
     get_total.short_description = 'Total'
 
+@admin.register(FormaPagamento)
+class FormaPagamentoAdmin(admin.ModelAdmin):
+    list_display = ('nome',)
+    search_fields = ('nome',)
+    ordering = ('nome',)

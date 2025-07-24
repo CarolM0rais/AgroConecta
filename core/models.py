@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
+from django.utils import timezone
 
 class Cidade(models.Model):
     nome = models.CharField(max_length=100, verbose_name='Cidade')
@@ -15,29 +16,18 @@ class Cidade(models.Model):
 
 
 class CustomUser(AbstractUser):
-    """Modelo de usuário customizado"""
     USER_TYPE_CHOICES = [
         ('produtor', 'Produtor'),
         ('comprador', 'Comprador'),
     ]
-    
     user_type = models.CharField(
         max_length=10,
         choices=USER_TYPE_CHOICES,
         default='comprador',
         verbose_name='Tipo de Usuário'
     )
-    telefone = models.CharField(
-        max_length=15,
-        blank=True,
-        null=True,
-        verbose_name='Telefone'
-    )
-    endereco = models.TextField(
-        blank=True,
-        null=True,
-        verbose_name='Endereço'
-    )
+    telefone = models.CharField(max_length=15, blank=True, null=True, verbose_name='Telefone')
+    endereco = models.TextField(blank=True, null=True, verbose_name='Endereço')
     cidade = models.ForeignKey(
         Cidade,
         on_delete=models.SET_NULL,
@@ -51,21 +41,19 @@ class CustomUser(AbstractUser):
 
 
 class Categoria(models.Model):
-    """Modelo para categorias de produtos"""
     nome = models.CharField(max_length=100, unique=True, verbose_name='Nome')
     descricao = models.TextField(blank=True, null=True, verbose_name='Descrição')
-    
+
     class Meta:
         verbose_name = 'Categoria'
         verbose_name_plural = 'Categorias'
         ordering = ['nome']
-    
+
     def __str__(self):
         return self.nome
 
 
 class Produto(models.Model):
-    """Modelo para produtos agrícolas"""
     nome = models.CharField(max_length=200, verbose_name='Nome')
     descricao = models.TextField(verbose_name='Descrição')
     categoria = models.ForeignKey(
@@ -81,45 +69,37 @@ class Produto(models.Model):
         limit_choices_to={'user_type': 'produtor'},
         verbose_name='Produtor'
     )
-    preco = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        verbose_name='Preço (R$)'
-    )
-    unidade = models.CharField(
-        max_length=20,
-        default='kg',
-        verbose_name='Unidade'
-    )
-    quantidade_disponivel = models.PositiveIntegerField(
-        verbose_name='Quantidade Disponível'
-    )
-    imagem = models.ImageField(
-        upload_to='produtos/',
-        blank=True,
-        null=True,
-        verbose_name='Imagem'
-    )
+    preco = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Preço (R$)')
+    unidade = models.CharField(max_length=20, default='kg', verbose_name='Unidade')
+    quantidade_disponivel = models.PositiveIntegerField(verbose_name='Quantidade Disponível')
+    imagem = models.ImageField(upload_to='produtos/', blank=True, null=True, verbose_name='Imagem')
     ativo = models.BooleanField(default=True, verbose_name='Ativo')
     data_criacao = models.DateTimeField(auto_now_add=True, verbose_name='Data de Criação')
     data_atualizacao = models.DateTimeField(auto_now=True, verbose_name='Data de Atualização')
-    
+
     class Meta:
         verbose_name = 'Produto'
         verbose_name_plural = 'Produtos'
         ordering = ['-data_criacao']
-    
+
     def __str__(self):
         return f"{self.nome} - {self.produtor.username}"
-    
+
     def get_absolute_url(self):
         return reverse('produto_detail', kwargs={'pk': self.pk})
 
 
-from django.db import models
-from django.urls import reverse
-from core.models import CustomUser
-  # Ajuste conforme o local do seu modelo de usuário
+class FormaPagamento(models.Model):
+    nome = models.CharField(max_length=50, unique=True, verbose_name='Forma de Pagamento')
+
+    class Meta:
+        verbose_name = 'Forma de Pagamento'
+        verbose_name_plural = 'Formas de Pagamento'
+        ordering = ['nome']
+
+    def __str__(self):
+        return self.nome
+
 
 class Pedido(models.Model):
     STATUS_CHOICES = [
@@ -129,13 +109,6 @@ class Pedido(models.Model):
         ('enviado', 'Enviado'),
         ('entregue', 'Entregue'),
         ('cancelado', 'Cancelado'),
-    ]
-
-    FORMA_PAGAMENTO_CHOICES = [
-        ('boleto', 'Boleto'),
-        ('cartao', 'Cartão de Crédito'),
-        ('pix', 'PIX'),
-        ('dinheiro,','DINHEIRO'),
     ]
 
     comprador = models.ForeignKey(
@@ -149,27 +122,12 @@ class Pedido(models.Model):
     data_pedido = models.DateTimeField(auto_now_add=True, verbose_name='Data do Pedido')
     data_atualizacao = models.DateTimeField(auto_now=True, verbose_name='Data de Atualização')
     observacoes = models.TextField(blank=True, null=True, verbose_name='Observações')
-    forma_pagamento = models.CharField(
-        max_length=20,
-        choices=FORMA_PAGAMENTO_CHOICES,
-        default='boleto',
+
+    forma_pagamento = models.ForeignKey(
+        FormaPagamento,
+        on_delete=models.PROTECT,
         verbose_name='Forma de Pagamento'
     )
-    
-    class Meta:
-        verbose_name = 'Pedido'
-        verbose_name_plural = 'Pedidos'
-        ordering = ['-data_pedido']
-    
-    def __str__(self):
-        return f"Pedido #{self.pk} - {self.comprador.username}"
-    
-    def get_total(self):
-        return sum(item.get_subtotal() for item in self.itens.all())
-    
-    def get_absolute_url(self):
-        return reverse('pedido_detail', kwargs={'pk': self.pk})
-
 
     class Meta:
         verbose_name = 'Pedido'
@@ -180,14 +138,13 @@ class Pedido(models.Model):
         return f"Pedido #{self.pk} - {self.comprador.username}"
 
     def get_total(self):
-        """Calcula o valor total do pedido com base nos itens."""
         return sum(item.get_subtotal() for item in self.itens.all())
 
     def get_absolute_url(self):
         return reverse('pedido_detail', kwargs={'pk': self.pk})
+
 
 class ItemPedido(models.Model):
-    """Modelo para itens do pedido"""
     pedido = models.ForeignKey(
         Pedido,
         on_delete=models.CASCADE,
@@ -205,26 +162,21 @@ class ItemPedido(models.Model):
         decimal_places=2,
         verbose_name='Preço Unitário'
     )
-    
+
     class Meta:
         verbose_name = 'Item do Pedido'
         verbose_name_plural = 'Itens do Pedido'
         unique_together = ['pedido', 'produto']
-    
+
     def __str__(self):
         return f"{self.produto.nome} - Qtd: {self.quantidade}"
-    
+
     def get_subtotal(self):
-        """Calcula o subtotal do item"""
         return self.quantidade * self.preco_unitario
 
-
-from django.utils import timezone
 
 class AvaliacaoPedido(models.Model):
     pedido = models.OneToOneField(Pedido, on_delete=models.CASCADE, related_name='avaliacao')
     nota = models.PositiveSmallIntegerField()  # por exemplo, 1 a 5
     comentario = models.TextField(blank=True, null=True)
     criado_em = models.DateTimeField(default=timezone.now)
-
-
